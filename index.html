@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#2d6a4f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="中1参考書">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <title>中1参考書アプリ</title>
+  <style>
+    /* ===== Reset & Base ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', 'Yu Gothic', sans-serif;
+      background: #f0f4f0;
+      color: #1a202c;
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* ===== Screens ===== */
+    .screen { display: none; min-height: 100vh; }
+    .screen.active { display: block; }
+
+    /* ===== HOME SCREEN ===== */
+    #home {
+      background: linear-gradient(160deg, #1a4731 0%, #2d6a4f 40%, #40916c 100%);
+      padding-bottom: 40px;
+    }
+    .home-header {
+      text-align: center;
+      padding: 48px 24px 32px;
+    }
+    .home-header .app-icon { font-size: 64px; display: block; margin-bottom: 12px; }
+    .home-header h1 {
+      color: #fff;
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .home-header .subtitle {
+      color: #b7e4c7;
+      font-size: 14px;
+      margin-top: 6px;
+      letter-spacing: 1px;
+    }
+    .subject-grid {
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .subject-btn {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 22px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      text-align: left;
+      width: 100%;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      transition: transform 0.15s, box-shadow 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .subject-btn::after {
+      content: '›';
+      position: absolute;
+      right: 22px;
+      font-size: 28px;
+      opacity: 0.7;
+    }
+    .subject-btn:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .subject-btn .btn-icon { font-size: 36px; }
+    .subject-btn .btn-text { display: flex; flex-direction: column; }
+    .subject-btn .btn-name { font-size: 22px; letter-spacing: 1px; }
+    .subject-btn .btn-sub { font-size: 12px; font-weight: 500; opacity: 0.85; margin-top: 2px; }
+    .btn-kokugo  { background: linear-gradient(135deg, #c53030, #e53e3e); }
+    .btn-math    { background: linear-gradient(135deg, #2b6cb0, #3182ce); }
+    .btn-rika    { background: linear-gradient(135deg, #276749, #38a169); }
+    .btn-shakai  { background: linear-gradient(135deg, #b7791f, #d69e2e); }
+    .btn-eigo    { background: linear-gradient(135deg, #553c9a, #805ad5); }
+
+    /* ===== SUBJECT SCREEN ===== */
+    #subject { background: #f7fafc; }
+    .subject-header {
+      padding: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .subject-header-inner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      color: #fff;
+    }
+    .back-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .back-btn:active { background: rgba(255,255,255,0.4); }
+    .subject-header-icon { font-size: 30px; }
+    .subject-header-title { font-size: 22px; font-weight: 900; letter-spacing: 1px; }
+    .subject-header-count { font-size: 12px; opacity: 0.8; margin-top: 1px; }
+    .topic-list { padding: 16px; display: flex; flex-direction: column; gap: 14px; padding-bottom: 40px; }
+
+    /* ===== TOPIC CARD ===== */
+    .topic-card {
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      background: #fff;
+    }
+    .topic-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+    .topic-header .topic-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .topic-header .topic-icon { font-size: 22px; }
+    .topic-header .topic-title { font-size: 16px; font-weight: 800; color: #fff; flex: 1; }
+    .topic-header .toggle-icon {
+      color: rgba(255,255,255,0.8);
+      font-size: 20px;
+      transition: transform 0.3s;
+      flex-shrink: 0;
+    }
+    .topic-card.open .toggle-icon { transform: rotate(180deg); }
+    .topic-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .topic-card.open .topic-body { max-height: 9999px; }
+    .topic-content { padding: 16px; }
+
+    /* ===== Content Blocks ===== */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 14px 0 6px;
+      opacity: 0.6;
+    }
+    .section-label:first-child { margin-top: 0; }
+
+    /* Highlight box */
+    .box {
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin: 6px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .box-red    { background: #fff5f5; border-left: 4px solid #e53e3e; }
+    .box-blue   { background: #ebf8ff; border-left: 4px solid #3182ce; }
+    .box-green  { background: #f0fff4; border-left: 4px solid #38a169; }
+    .box-orange { background: #fffaf0; border-left: 4px solid #d69e2e; }
+    .box-purple { background: #faf5ff; border-left: 4px solid #805ad5; }
+    .box-gray   { background: #f7fafc; border-left: 4px solid #718096; }
+    .box-pink   { background: #fff0f6; border-left: 4px solid #d63384; }
+    .box-teal   { background: #e6fffa; border-left: 4px solid #319795; }
+    .box-yellow { background: #fffff0; border-left: 4px solid #d69e2e; }
+
+    /* Callout / tip box */
+    .callout {
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin: 8px 0;
+      font-size: 13px;
+      line-height: 1.7;
+      display: flex;
+      gap: 8px;
+    }
+    .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .callout-red    { background: #fff5f5; border: 1.5px solid #feb2b2; }
+    .callout-blue   { background: #ebf8ff; border: 1.5px solid #90cdf4; }
+    .callout-green  { background: #f0fff4; border: 1.5px solid #9ae6b4; }
+    .callout-orange { background: #fffaf0; border: 1.5px solid #fbd38d; }
+    .callout-purple { background: #faf5ff; border: 1.5px solid #d6bcfa; }
+    .callout-yellow { background: #fffff0; border: 1.5px solid #f6e05e; }
+
+    /* Pill / tag */
+    .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .tag-red    { background: #fed7d7; color: #c53030; }
+    .tag-blue   { background: #bee3f8; color: #2b6cb0; }
+    .tag-green  { background: #c6f6d5; color: #276749; }
+    .tag-orange { background: #feebc8; color: #c05621; }
+    .tag-purple { background: #e9d8fd; color: #553c9a; }
+    .tag-pink   { background: #fed7e2; color: #97266d; }
+    .tag-teal   { background: #b2f5ea; color: #234e52; }
+    .tag-gray   { background: #e2e8f0; color: #4a5568; }
+
+    /* Table */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 8px 0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .data-table th {
+      padding: 8px 10px;
+      text-align: left;
+      font-weight: 700;
+      color: #fff;
+      font-size: 12px;
+    }
+    .data-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:nth-child(even) td { background: #f7fafc; }
+
+    /* Formula box */
+    .formula {
+      background: #1a202c;
+      color: #f6e05e;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: monospace;
+      font-size: 14px;
+      margin: 6px 0;
+      letter-spacing: 0.5px;
+    }
+
+    /* Key term inline */
+    .kw { font-weight: 800; }
+    .kw-red    { color: #c53030; }
+    .kw-blue   { color: #2b6cb0; }
+    .kw-green  { color: #276749; }
+    .kw-orange { color: #c05621; }
+    .kw-purple { color: #553c9a; }
+
+    /* Divider */
+    .divider { height: 1px; background: #e2e8f0; margin: 10px 0; }
+
+    /* List */
+    .content-list { list-style: none; padding: 0; margin: 4px 0; }
+    .content-list li {
+      padding: 4px 0 4px 20px;
+      position: relative;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .content-list li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: #a0aec0;
+    }
+
+    /* Grid 2-col */
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0; }
+
+    /* ===== Subject color themes ===== */
+    /* 国語 red */
+    .theme-kokugo .subject-header { background: linear-gradient(135deg, #c53030, #e53e3e); }
+    .theme-kokugo .topic-header   { background: linear-gradient(135deg, #c53030, #e53e3e); }
+    .theme-kokugo .data-table th  { background: #e53e3e; }
+
+    /* 数学 blue */
+    .theme-math .subject-header { background: linear-gradient(135deg, #2b6cb0, #3182ce); }
+    .theme-math .topic-header   { background: linear-gradient(135deg, #2b6cb0, #3182ce); }
+    .theme-math .data-table th  { background: #3182ce; }
+
+    /* 理科 green */
+    .theme-rika .subject-header { background: linear-gradient(135deg, #276749, #38a169); }
+    .theme-rika .topic-header   { background: linear-gradient(135deg, #276749, #38a169); }
+    .theme-rika .data-table th  { background: #38a169; }
+
+    /* 社会 orange */
+    .theme-shakai .subject-header { background: linear-gradient(135deg, #b7791f, #d69e2e); }
+    .theme-shakai .topic-header   { background: linear-gradient(135deg, #b7791f, #d69e2e); }
+    .theme-shakai .data-table th  { background: #d69e2e; }
+
+    /* 英語 purple */
+    .theme-eigo .subject-header { background: linear-gradient(135deg, #553c9a, #805ad5); }
+    .theme-eigo .topic-header   { background: linear-gradient(135deg, #553c9a, #805ad5); }
+    .theme-eigo .data-table th  { background: #805ad5; }
+
+    /* ===== Utility ===== */
+    p { font-size: 14px; line-height: 1.7; margin: 4px 0; }
+    strong { font-weight: 800; }
+    small { font-size: 12px; color: #718096; }
+    .mt8 { margin-top: 8px; }
+    .mb8 { margin-bottom: 8px; }
+    .center { text-align: center; }
+  </style>
+</head>
+<body>
+
+<!-- ========== HOME SCREEN ========== -->
+<section id="home" class="screen active">
+  <div class="home-header">
+    <span class="app-icon">📚</span>
+    <h1>中1 参考書</h1>
+    <p class="subtitle">中学校1年生 ・ 5教科まとめ</p>
+  </div>
+  <div class="subject-grid">
+    <button class="subject-btn btn-kokugo" onclick="showSubject('kokugo')">
+      <span class="btn-icon">📖</span>
+      <span class="btn-text">
+        <span class="btn-name">国語</span>
+        <span class="btn-sub">漢字・文法・古典・詩歌</span>
+      </span>
+    </button>
+    <button class="subject-btn btn-math" onclick="showSubject('math')">
+      <span class="btn-icon">🔢</span>
+      <span class="btn-text">
+        <span class="btn-name">数学</span>
+        <span class="btn-sub">正負の数・文字式・方程式・図形</span>
+      </span>
+    </button>
+    <button class="subject-btn btn-rika" onclick="showSubject('rika')">
+      <span class="btn-icon">🔬</span>
+      <span class="btn-text">
+        <span class="btn-name">理科</span>
+        <span class="btn-sub">植物・動物・物質・光・力</span>
+      </span>
+    </button>
+    <button class="subject-btn btn-shakai" onclick="showSubject('shakai')">
+      <span class="btn-icon">🌏</span>
+      <span class="btn-text">
+        <span class="btn-name">社会</span>
+        <span class="btn-sub">地理・歴史（原始〜鎌倉）</span>
+      </span>
+    </button>
+    <button class="subject-btn btn-eigo" onclick="showSubject('eigo')">
+      <span class="btn-icon">🔤</span>
+      <span class="btn-text">
+        <span class="btn-name">英語</span>
+        <span class="btn-sub">be動詞・一般動詞・文法基礎</span>
+      </span>
+    </button>
+  </div>
+</section>
+
+<!-- ========== SUBJECT SCREEN ========== -->
+<section id="subject" class="screen">
+  <div class="subject-header">
+    <div class="subject-header-inner">
+      <button class="back-btn" onclick="showHome()">&#8592;</button>
+      <span class="subject-header-icon" id="subjectIcon"></span>
+      <div>
+        <div class="subject-header-title" id="subjectTitle"></div>
+        <div class="subject-header-count" id="subjectCount"></div>
+      </div>
+    </div>
+  </div>
+  <div class="topic-list" id="topicList"></div>
+</section>
+
+<script>
+// ===================================================
+// DATA
+// ===================================================
+const subjects = {
+  kokugo: {
+    name: '国語',
+    icon: '📖',
+    theme: 'theme-kokugo',
+    color: '#e53e3e',
+    topics: [
+      {
+        icon: '🈳',
+        title: '漢字の知識',
+        content: `
+<p class="section-label">📌 音読み・訓読み</p>
+<div class="box box-red">
+  <strong class="kw kw-red">音読み</strong>：中国語に由来する読み方　例）山（さん）・川（せん）<br>
+  <strong class="kw kw-red">訓読み</strong>：日本語本来の読み方　例）山（やま）・川（かわ）
+</div>
+<div class="callout callout-red"><span class="callout-icon">⚠️</span><div>一つの漢字に音読みと訓読みが両方ある場合が多い。「山」→ 音：サン、訓：やま</div></div>
+
+<p class="section-label">🏗️ 部首の種類</p>
+<table class="data-table">
+  <tr><th>部首名</th><th>位置</th><th>例</th></tr>
+  <tr><td>へん</td><td>左側</td><td>氵（さんずい）・木偏</td></tr>
+  <tr><td>つくり</td><td>右側</td><td>刀（りっとう）・力</td></tr>
+  <tr><td>かんむり</td><td>上側</td><td>艹（くさかんむり）・宀</td></tr>
+  <tr><td>あし</td><td>下側</td><td>灬（れっか）・心</td></tr>
+  <tr><td>たれ</td><td>左〜下</td><td>广（まだれ）・尸</td></tr>
+  <tr><td>にょう</td><td>左〜右</td><td>辶（しんにょう）・走</td></tr>
+  <tr><td>かまえ</td><td>囲む</td><td>囗（くにがまえ）・門</td></tr>
+</table>
+
+<p class="section-label">✏️ 筆順の原則</p>
+<div class="tag-row">
+  <span class="tag tag-red">上から下へ</span>
+  <span class="tag tag-red">左から右へ</span>
+  <span class="tag tag-red">横から縦へ</span>
+  <span class="tag tag-red">外から内へ</span>
+</div>
+
+<p class="section-label">🔢 画数の例</p>
+<div class="grid2">
+  <div class="box box-gray center"><strong>木</strong> → <span class="kw kw-red">4画</span></div>
+  <div class="box box-gray center"><strong>口</strong> → <span class="kw kw-red">3画</span></div>
+  <div class="box box-gray center"><strong>山</strong> → <span class="kw kw-red">3画</span></div>
+  <div class="box box-gray center"><strong>田</strong> → <span class="kw kw-red">5画</span></div>
+</div>`
+      },
+      {
+        icon: '🗂️',
+        title: '品詞の分類',
+        content: `
+<p class="section-label">📋 品詞一覧</p>
+<div class="box box-red">
+  <strong class="kw kw-red">自立語</strong>（単独で文節をつくれる）：<br>
+  名詞・動詞・形容詞・形容動詞・副詞・連体詞・接続詞・感動詞
+</div>
+<div class="box box-pink">
+  <strong class="kw" style="color:#97266d">付属語</strong>（単独で文節をつくれない）：<br>
+  <strong>助詞・助動詞</strong>
+</div>
+
+<p class="section-label">🔄 活用の有無</p>
+<table class="data-table">
+  <tr><th>分類</th><th>品詞</th><th>例</th></tr>
+  <tr><td><strong class="kw kw-red">用言</strong>（活用する）</td><td>動詞・形容詞・形容動詞</td><td>走る・美しい・静かだ</td></tr>
+  <tr><td><strong class="kw kw-red">体言</strong>（活用しない）</td><td>名詞</td><td>犬・東京・三つ</td></tr>
+  <tr><td>その他の自立語</td><td>副詞・連体詞・接続詞・感動詞</td><td>とても・この・しかし・ああ</td></tr>
+</table>
+
+<div class="callout callout-red"><span class="callout-icon">💡</span><div><strong>体言は主語になれる</strong>、用言は述語になれる、と覚えよう！</div></div>
+
+<p class="section-label">🏷️ 各品詞の説明</p>
+<ul class="content-list">
+  <li><strong>名詞</strong>：物事の名前（机・自由・三つ）</li>
+  <li><strong>動詞</strong>：動作・存在（走る・ある・食べる）</li>
+  <li><strong>形容詞</strong>：状態「い」で終わる（高い・美しい）</li>
+  <li><strong>形容動詞</strong>：状態「だ/な」（静かだ・元気な）</li>
+  <li><strong>副詞</strong>：主に用言を修飾（とても・もっと）</li>
+  <li><strong>連体詞</strong>：体言のみ修飾（この・ある・いわゆる）</li>
+  <li><strong>接続詞</strong>：文をつなぐ（しかし・そして・だから）</li>
+  <li><strong>感動詞</strong>：感動・呼びかけ（ああ・ねえ・はい）</li>
+</ul>`
+      },
+      {
+        icon: '🔀',
+        title: '動詞の活用',
+        content: `
+<p class="section-label">📊 活用の種類</p>
+<table class="data-table">
+  <tr><th>種類</th><th>語幹</th><th>未然</th><th>連用</th><th>終止</th><th>連体</th><th>仮定</th><th>命令</th></tr>
+  <tr><td><strong>五段</strong><br><small>書く</small></td><td>書</td><td>か</td><td>き</td><td>く</td><td>く</td><td>け</td><td>け</td></tr>
+  <tr><td><strong>上一段</strong><br><small>見る</small></td><td>見</td><td>み</td><td>み</td><td>みる</td><td>みる</td><td>みれ</td><td>みよ</td></tr>
+  <tr><td><strong>下一段</strong><br><small>食べる</small></td><td>食べ</td><td>食べ</td><td>食べ</td><td>食べる</td><td>食べる</td><td>食べれ</td><td>食べよ</td></tr>
+  <tr><td><strong>カ変</strong><br><small>来る</small></td><td>—</td><td>こ</td><td>き</td><td>くる</td><td>くる</td><td>くれ</td><td>こい</td></tr>
+  <tr><td><strong>サ変</strong><br><small>する</small></td><td>—</td><td>し</td><td>し</td><td>する</td><td>する</td><td>すれ</td><td>せよ</td></tr>
+</table>
+
+<div class="callout callout-red"><span class="callout-icon">⚠️</span><div><strong>カ行変格（来る）とサ行変格（する）</strong>は不規則変化！丸ごと覚えよう。</div></div>
+
+<p class="section-label">🔑 活用形の用法</p>
+<ul class="content-list">
+  <li><strong>未然形</strong>：「ない・う・よう・れる」などが続く</li>
+  <li><strong>連用形</strong>：「た・て・ます」などが続く、中止法</li>
+  <li><strong>終止形</strong>：文を言い切る</li>
+  <li><strong>連体形</strong>：体言（名詞）が続く</li>
+  <li><strong>仮定形</strong>：「ば」が続く</li>
+  <li><strong>命令形</strong>：命令して言い切る</li>
+</ul>`
+      },
+      {
+        icon: '📐',
+        title: '文の成分',
+        content: `
+<p class="section-label">🔑 文の成分の種類</p>
+<table class="data-table">
+  <tr><th>成分</th><th>説明</th><th>例</th></tr>
+  <tr><td><strong class="kw kw-red">主語</strong></td><td>「〜は」「〜が」</td><td><strong>犬が</strong>走る</td></tr>
+  <tr><td><strong class="kw kw-red">述語</strong></td><td>動作・状態・存在</td><td>犬が<strong>走る</strong></td></tr>
+  <tr><td><strong class="kw kw-red">修飾語</strong></td><td>他の文節を詳しく説明</td><td><strong>速く</strong>走る</td></tr>
+  <tr><td><strong class="kw kw-red">接続語</strong></td><td>前後の文をつなぐ</td><td><strong>しかし、</strong>〜</td></tr>
+  <tr><td><strong class="kw kw-red">独立語</strong></td><td>他と関係が独立</td><td><strong>おい、</strong>聞け</td></tr>
+</table>
+
+<p class="section-label">📝 文節と単語</p>
+<div class="box box-red">
+  <strong>文節</strong>：意味のある最小の区切り（「ネ」で区切れる）<br>
+  　例）「私は｜学校に｜行く」<br>
+  <strong>単語</strong>：それ以上分割できない最小単位<br>
+  　例）「私」「は」「学校」「に」「行く」
+</div>
+
+<div class="callout callout-red"><span class="callout-icon">💡</span><div>係り受け：修飾語はかかる相手（被修飾語）をすぐ近くに置く。遠くにかかるほど読みづらい文になる。</div></div>`
+      },
+      {
+        icon: '📜',
+        title: '古典入門（竹取物語・枕草子）',
+        content: `
+<p class="section-label">📖 竹取物語</p>
+<div class="formula">今は昔、竹取の翁といふものありけり。</div>
+<div class="box box-red">
+  最初の物語文学。作者不明。<br>
+  かぐや姫が月に帰る有名な話。
+</div>
+
+<p class="section-label">🌸 枕草子</p>
+<div class="formula">春はあけぼの。</div>
+<div class="box box-pink">
+  作者：<strong class="kw kw-red">清少納言</strong>（平安時代）<br>
+  随筆文学。四季・人物・もの・ことなど鋭い観察眼で記述。
+</div>
+
+<p class="section-label">📝 歴史的仮名遣い → 現代語</p>
+<table class="data-table">
+  <tr><th>歴史的仮名遣い</th><th>現代語</th><th>例</th></tr>
+  <tr><td>ゐ・ゑ・を（文頭以外）</td><td>い・え・お</td><td>ゐる→いる</td></tr>
+  <tr><td>は（助詞・語中）</td><td>わ</td><td>あはれ→あわれ</td></tr>
+  <tr><td>ひ・ふ・へ（語中）</td><td>い・う・え</td><td>いふ→いう</td></tr>
+  <tr><td>au → ou</td><td>おう</td><td>かう→こう</td></tr>
+</table>
+
+<p class="section-label">⚡ 係り結びの法則</p>
+<table class="data-table">
+  <tr><th>係助詞</th><th>文末の活用形</th></tr>
+  <tr><td><strong class="kw kw-red">ぞ・なむ・や・か</strong></td><td>連体形</td></tr>
+  <tr><td><strong class="kw kw-red">こそ</strong></td><td>已然形</td></tr>
+</table>
+<div class="callout callout-red"><span class="callout-icon">💡</span><div>係助詞があると文末が変化する！「ぞ・なむ・や・か」→連体形で終わる。</div></div>`
+      },
+      {
+        icon: '📚',
+        title: '漢文の基礎',
+        content: `
+<p class="section-label">🔄 返り点</p>
+<table class="data-table">
+  <tr><th>返り点</th><th>読み方</th><th>例</th></tr>
+  <tr><td><strong class="kw kw-red">レ点</strong></td><td>直前の1字に返る</td><td>不レ行→行かず</td></tr>
+  <tr><td><strong class="kw kw-red">一二点</strong></td><td>「一」から「二」へ返る</td><td>一→二→三の順</td></tr>
+  <tr><td><strong class="kw kw-red">上下点</strong></td><td>一二点を飛び越えて返る</td><td>上→下</td></tr>
+</table>
+
+<p class="section-label">✍️ 書き下し文の例</p>
+<div class="formula">学而時習之、不亦説乎。</div>
+<div class="box box-red">
+  書き下し文：「学びて時にこれを習ふ、また説ばしからずや。」<br>
+  （孔子『論語』より）
+</div>
+
+<p class="section-label">📋 書き下し文のルール</p>
+<ul class="content-list">
+  <li>助詞・助動詞はひらがなで書く</li>
+  <li>返り点は書かない</li>
+  <li>送り仮名はひらがなで書く</li>
+  <li>読む順序に従って書く</li>
+</ul>
+<div class="callout callout-red"><span class="callout-icon">⚠️</span><div>漢字はそのまま、助詞・助動詞はひらがな！これが基本ルール。</div></div>`
+      },
+      {
+        icon: '📄',
+        title: '説明文・論説文の読み方',
+        content: `
+<p class="section-label">🎯 要旨のつかみ方</p>
+<ul class="content-list">
+  <li>最初と最後の段落に注目する</li>
+  <li>「つまり」「したがって」「要するに」の後ろ</li>
+  <li>繰り返し出てくるキーワードを探す</li>
+</ul>
+
+<p class="section-label">📐 段落構成</p>
+<div class="box box-red">
+  <strong class="kw kw-red">序論</strong>：話題の提示、問題提起<br>
+  <strong class="kw kw-red">本論</strong>：根拠・具体例・考察<br>
+  <strong class="kw kw-red">結論</strong>：主張のまとめ・解答
+</div>
+
+<p class="section-label">🔗 接続語の種類</p>
+<table class="data-table">
+  <tr><th>種類</th><th>働き</th><th>例</th></tr>
+  <tr><td><strong class="kw kw-red">順接</strong></td><td>原因→結果</td><td>だから・したがって・ゆえに</td></tr>
+  <tr><td><strong class="kw kw-red">逆接</strong></td><td>予想に反する</td><td>しかし・だが・ところが</td></tr>
+  <tr><td><strong class="kw kw-red">並列</strong></td><td>同類を並べる</td><td>また・および・かつ</td></tr>
+  <tr><td><strong class="kw kw-red">補足</strong></td><td>説明を加える</td><td>なぜなら・ただし・つまり</td></tr>
+  <tr><td><strong class="kw kw-red">転換</strong></td><td>話題を変える</td><td>さて・では・ところで</td></tr>
+</table>
+<div class="callout callout-red"><span class="callout-icon">💡</span><div><strong>逆接</strong>の後ろに筆者の主張が来ることが多い！「しかし」「だが」に注目！</div></div>`
+      },
+      {
+        icon: '🎵',
+        title: '詩・短歌・俳句',
+        content: `
+<p class="section-label">🖊️ 詩の種類</p>
+<div class="grid2">
+  <div class="box box-red center"><strong>口語詩</strong><br><small>現代語で書く</small></div>
+  <div class="box box-pink center"><strong>文語詩</strong><br><small>古い言葉で書く</small></div>
+  <div class="box box-red center"><strong>定型詩</strong><br><small>音数が決まってる</small></div>
+  <div class="box box-pink center"><strong>自由詩</strong><br><small>音数が自由</small></div>
+</div>
+
+<p class="section-label">📝 短歌</p>
+<div class="formula">5・7・5・7・7 = 31文字（三十一文字）</div>
+<div class="box box-red">
+  <strong>枕詞</strong>：特定の言葉の前に置く慣用句（5音）<br>
+  　例）「ひさかたの」→光・天・月<br>
+  <strong>序詞</strong>：枕詞より長く、その後の言葉を導く表現
+</div>
+
+<p class="section-label">🍂 俳句</p>
+<div class="formula">5・7・5 = 17文字（十七文字）</div>
+<div class="box box-red">
+  <strong class="kw kw-red">季語</strong>：その句の季節を表す言葉（必須）<br>
+  <strong class="kw kw-red">切れ字</strong>：余韻や感動を表す（や・かな・けり）
+</div>
+<div class="callout callout-red"><span class="callout-icon">💡</span><div>「古池や 蛙飛び込む 水の音」（松尾芭蕉）→ 切れ字「や」、季語「蛙」（春）</div></div>`
+      }
+    ]
+  },
+
+  math: {
+    name: '数学',
+    icon: '🔢',
+    theme: 'theme-math',
+    color: '#3182ce',
+    topics: [
+      {
+        icon: '➕',
+        title: '正負の数',
+        content: `
+<p class="section-label">🔑 数の種類</p>
+<div class="box box-blue">
+  <strong class="kw kw-blue">自然数</strong>：1, 2, 3, … （正の整数）<br>
+  <strong class="kw kw-blue">整数</strong>：…-2, -1, 0, 1, 2, …<br>
+  <strong class="kw kw-blue">正の数</strong>：0より大きい数<br>
+  <strong class="kw kw-blue">負の数</strong>：0より小さい数
+</div>
+
+<p class="section-label">📏 絶対値</p>
+<div class="formula">絶対値 = 数直線上の原点（0）からの距離</div>
+<div class="box box-blue">
+  |+5| = 5　　|-5| = 5<br>
+  絶対値は必ず <strong>0以上</strong>
+</div>
+
+<p class="section-label">🔢 加法・減法</p>
+<table class="data-table">
+  <tr><th>パターン</th><th>方法</th><th>例</th></tr>
+  <tr><td>同符号の加法</td><td>絶対値の和・符号はそのまま</td><td>(+3)+(+4)=+7</td></tr>
+  <tr><td>異符号の加法</td><td>絶対値の差・大きい方の符号</td><td>(+5)+(-3)=+2</td></tr>
+  <tr><td>減法</td><td>引く数の符号を変えて加法</td><td>5-(-3)=5+3=8</td></tr>
+</table>
+
+<p class="section-label">✖️ 乗法・除法</p>
+<div class="box box-blue">
+  <strong>同符号</strong>どうしの積・商 → <span class="kw kw-blue">正</span><br>
+  <strong>異符号</strong>どうしの積・商 → <span class="kw kw-blue">負</span>
+</div>
+
+<p class="section-label">⚡ 累乗の注意！</p>
+<div class="callout callout-blue"><span class="callout-icon">⚠️</span><div>
+  <strong>(-3)² = (-3)×(-3) = +9</strong>　← カッコごと2乗<br>
+  <strong>-3² = -(3×3) = -9</strong>　← 3だけ2乗してマイナス
+</div></div>`
+      },
+      {
+        icon: '🧮',
+        title: '四則混合計算',
+        content: `
+<p class="section-label">📐 計算の順序</p>
+<div class="box box-blue">
+  <strong class="kw kw-blue">① 累乗</strong> → <strong class="kw kw-blue">② かっこ内</strong> → <strong class="kw kw-blue">③ 乗法・除法</strong> → <strong class="kw kw-blue">④ 加法・減法</strong>
+</div>
+<div class="formula">例：2 + 3² × (4-1) = 2 + 9 × 3 = 2 + 27 = 29</div>
+
+<p class="section-label">📊 分配法則</p>
+<div class="formula">a × (b + c) = a×b + a×c</div>
+<div class="box box-blue">
+  例）4 × (3 + 5) = 4×3 + 4×5 = 12 + 20 = 32<br>
+  逆も使える：12 + 20 = 4(3+5)（因数でくくる）
+</div>
+
+<p class="section-label">🔄 逆数</p>
+<div class="box box-blue">
+  <strong class="kw kw-blue">逆数</strong>：分子と分母をひっくり返した数<br>
+  3/4 の逆数 → 4/3<br>
+  2 の逆数 → 1/2<br>
+  <strong>元の数 × 逆数 = 1</strong>
+</div>
+
+<div class="callout callout-blue"><span class="callout-icon">💡</span><div>割り算は逆数をかける割り算に変換できる：a ÷ (b/c) = a × (c/b)</div></div>`
+      },
+      {
+        icon: '🔤',
+        title: '文字式',
+        content: `
+<p class="section-label">✍️ 積の表し方</p>
+<table class="data-table">
+  <tr><th>元の式</th><th>文字式での表し方</th></tr>
+  <tr><td>a × b</td><td>ab（×を省略）</td></tr>
+  <tr><td>1 × a</td><td>a（1は省略）</td></tr>
+  <tr><td>-1 × a</td><td>-a（1は省略）</td></tr>
+  <tr><td>a × a</td><td>a²（累乗で表す）</td></tr>
+  <tr><td>a × b × 3</td><td>3ab（数字を前に）</td></tr>
+</table>
+
+<p class="section-label">➗ 商の表し方</p>
+<div class="formula">a ÷ 3 = a/3 　　　x ÷ y = x/y</div>
+
+<p class="section-label">📌 項・係数・次数</p>
+<div class="box box-blue">
+  <strong>式</strong>：3x² + 2x - 5<br>
+  <strong class="kw kw-blue">項</strong>：3x²、2x、-5<br>
+  <strong class="kw kw-blue">係数</strong>：3x²の係数は3、2xの係数は2<br>
+  <strong class="kw kw-blue">次数</strong>：3x²は2次、2xは1次
+</div>
+
+<p class="section-label">🔢 式の値</p>
+<div class="formula">x=2のとき 3x+1 = 3×2+1 = 7</div>
+<div class="callout callout-blue"><span class="callout-icon">💡</span><div>式の値を求めるときは、文字に数値を代入して計算する！</div></div>`
+      },
+      {
+        icon: '🔣',
+        title: '文字式の計算',
+        content: `
+<p class="section-label">🔀 同類項をまとめる</p>
+<div class="box box-blue">
+  <strong class="kw kw-blue">同類項</strong>：文字の部分が同じ項<br>
+  3x + 2x = 5x　（係数を足す）<br>
+  7a - 3a = 4a　（係数を引く）<br>
+  3x + 2y → まとめられない（文字が違う）
+</div>
+
+<p class="section-label">📐 分配法則</p>
+<div class="formula">3(2x - 1) = 6x - 3</div>
+<div class="formula">-2(x + 4) = -2x - 8</div>
+<div class="callout callout-blue"><span class="callout-icon">⚠️</span><div>マイナスをかけるとき：符号が変わる！ -2(x+4)=-2x-8</div></div>
+
+<p class="section-label">➕ 式の加法・減法</p>
+<div class="formula">(3x+2)+(2x-1) = 3x+2x+2-1 = 5x+1</div>
+<div class="formula">(3x+2)-(2x-1) = 3x+2-2x+1 = x+3</div>
+<div class="callout callout-blue"><span class="callout-icon">⚠️</span><div>式を引くときはカッコ内全部の符号が変わる！ -(2x-1) = -2x+1</div></div>`
+      },
+      {
+        icon: '⚖️',
+        title: '方程式',
+        content: `
+<p class="section-label">📐 等式の性質</p>
+<ul class="content-list">
+  <li>両辺に同じ数を<strong>足しても</strong>等式は成り立つ</li>
+  <li>両辺から同じ数を<strong>引いても</strong>等式は成り立つ</li>
+  <li>両辺に同じ数を<strong>かけても</strong>等式は成り立つ</li>
+  <li>両辺を同じ数（≠0）で<strong>割っても</strong>等式は成り立つ</li>
+</ul>
+
+<p class="section-label">🔄 移項</p>
+<div class="box box-blue">
+  <strong class="kw kw-blue">移項</strong>：符号を変えて、反対側に移す<br>
+  3x + 5 = 11 → 3x = 11 - 5 = 6
+</div>
+
+<p class="section-label">✍️ 解き方</p>
+<div class="formula">2x + 3 = 9</div>
+<div class="formula">2x = 9 - 3 = 6</div>
+<div class="formula">x = 3</div>
+
+<p class="section-label">🔗 比例式</p>
+<div class="formula">a : b = c : d のとき ad = bc</div>
+<div class="box box-blue">
+  例）x : 4 = 3 : 6<br>
+  6x = 12 → x = 2
+</div>
+<div class="callout callout-blue"><span class="callout-icon">💡</span><div>比例式では「内項の積＝外項の積」。a:b=c:dのとき、b×c=a×d</div></div>`
+      },
+      {
+        icon: '📈',
+        title: '比例と反比例',
+        content: `
+<p class="section-label">📊 比例</p>
+<div class="formula">y = ax （aは比例定数）</div>
+<div class="box box-blue">
+  ・xが2倍になると yも2倍<br>
+  ・グラフは<strong>原点を通る直線</strong><br>
+  ・a&gt;0 → 右上がり、a&lt;0 → 右下がり
+</div>
+
+<p class="section-label">📉 反比例</p>
+<div class="formula">y = a/x （aは比例定数）</div>
+<div class="box box-blue">
+  ・xが2倍になると yは1/2倍<br>
+  ・グラフは<strong>双曲線</strong>（なめらかな曲線）<br>
+  ・x=0 は定義されない
+</div>
+
+<p class="section-label">📐 座標と変域</p>
+<div class="box box-blue">
+  <strong>座標</strong>：(x, y) → x軸とy軸の位置<br>
+  <strong>変域</strong>：1≤x≤3 （x は1以上3以下）<br>
+  1&lt;x&lt;3 （x は1より大きく3より小さい）
+</div>
+
+<table class="data-table">
+  <tr><th>記号</th><th>意味</th></tr>
+  <tr><td>≦（≤）</td><td>以下（その値を含む）</td></tr>
+  <tr><td>&lt;</td><td>より小さい（その値を含まない）</td></tr>
+</table>`
+      },
+      {
+        icon: '📐',
+        title: '平面図形',
+        content: `
+<p class="section-label">📏 直線・線分・半直線</p>
+<table class="data-table">
+  <tr><th>名称</th><th>特徴</th></tr>
+  <tr><td><strong class="kw kw-blue">直線</strong></td><td>両方向に無限に伸びる</td></tr>
+  <tr><td><strong class="kw kw-blue">線分</strong></td><td>2点を結ぶ有限の線</td></tr>
+  <tr><td><strong class="kw kw-blue">半直線</strong></td><td>1点から一方向に無限</td></tr>
+</table>
+
+<p class="section-label">📐 角の種類</p>
+<div class="grid2">
+  <div class="box box-blue center"><strong>直角</strong><br>90°</div>
+  <div class="box box-blue center"><strong>鋭角</strong><br>0°&lt;x&lt;90°</div>
+  <div class="box box-blue center"><strong>鈍角</strong><br>90°&lt;x&lt;180°</div>
+  <div class="box box-blue center"><strong>平角</strong><br>180°</div>
+</div>
+
+<p class="section-label">✏️ 作図の3基本</p>
+<ul class="content-list">
+  <li><strong>垂直二等分線</strong>：線分の中点を通り垂直な直線</li>
+  <li><strong>角の二等分線</strong>：角を2等分する直線</li>
+  <li><strong>垂線</strong>：点から直線への垂直線</li>
+</ul>
+<div class="callout callout-blue"><span class="callout-icon">💡</span><div>作図はコンパスと定規のみ！分度器は使わない。</div></div>
+
+<p class="section-label">🔄 垂線・平行線</p>
+<div class="box box-blue">
+  <strong>垂線</strong>：2直線が交わる角が90°<br>
+  <strong>平行線</strong>：2直線がどこまでも交わらない（記号：//）
+</div>`
+      },
+      {
+        icon: '⭕',
+        title: '円と扇形',
+        content: `
+<p class="section-label">⭕ 円の公式</p>
+<div class="formula">円の周の長さ = 2πr</div>
+<div class="formula">円の面積 = πr²</div>
+<div class="box box-blue">
+  r = 半径　π = 円周率（≒3.14159…）
+</div>
+
+<p class="section-label">🍕 扇形の公式</p>
+<div class="formula">弧の長さ = 2πr × a/360</div>
+<div class="formula">扇形の面積 = πr² × a/360</div>
+<div class="box box-blue">
+  a = 中心角（°）　r = 半径
+</div>
+
+<p class="section-label">📌 円の各部名称</p>
+<table class="data-table">
+  <tr><th>名称</th><th>説明</th></tr>
+  <tr><td><strong>中心角</strong></td><td>扇形の2つの半径がつくる角</td></tr>
+  <tr><td><strong>弧</strong></td><td>円周の一部（曲線部分）</td></tr>
+  <tr><td><strong>弦</strong></td><td>円周上の2点を結ぶ直線</td></tr>
+  <tr><td><strong>接線</strong></td><td>円に1点で接する直線</td></tr>
+</table>
+<div class="callout callout-blue"><span class="callout-icon">💡</span><div>半径の2倍が直径：d = 2r</div></div>`
+      }
+    ]
+  },
+
+  rika: {
+    name: '理科',
+    icon: '🔬',
+    theme: 'theme-rika',
+    color: '#38a169',
+    topics: [
+      {
+        icon: '🌿',
+        title: '植物のからだ',
+        content: `
+<p class="section-label">🌱 各部のはたらき</p>
+<table class="data-table">
+  <tr><th>部位</th><th>主なはたらき</th></tr>
+  <tr><td><strong>根</strong></td><td>水・無機塩類の吸収、植物を支える</td></tr>
+  <tr><td><strong>茎</strong></td><td>水・養分の通路、植物を支える</td></tr>
+  <tr><td><strong>葉</strong></td><td>光合成・蒸散</td></tr>
+  <tr><td><strong>花</strong></td><td>生殖（受粉・種子形成）</td></tr>
+</table>
+
+<p class="section-label">🚇 維管束（道管・師管）</p>
+<div class="grid2">
+  <div class="box box-green center"><strong class="kw kw-green">道管</strong><br>水・無機塩類<br>（根→葉へ）</div>
+  <div class="box box-teal center"><strong style="color:#234e52">師管</strong><br>有機物（糖）<br>（葉→各部へ）</div>
+</div>
+
+<p class="section-label">☀️ 光合成</p>
+<div class="formula">CO₂ + H₂O →(光)→ デンプン + O₂</div>
+<div class="box box-green">
+  場所：葉の<strong class="kw kw-green">葉緑体</strong>（クロロフィルを含む）<br>
+  条件：光・二酸化炭素・水
+</div>
+
+<p class="section-label">💧 蒸散</p>
+<div class="box box-green">
+  葉の裏の<strong class="kw kw-green">気孔</strong>から水分を水蒸気として放出<br>
+  → 根からの水の吸い上げを助ける
+</div>`
+      },
+      {
+        icon: '🌸',
+        title: '植物の分類',
+        content: `
+<p class="section-label">🌳 植物の分類体系</p>
+<div class="box box-green">
+  <strong class="kw kw-green">種子植物</strong>：種子で増える<br>
+  　├ <strong>被子植物</strong>：胚珠が子房に包まれる<br>
+  　│　├ 双子葉類（網状脈・主根と側根）<br>
+  　│　└ 単子葉類（平行脈・ひげ根）<br>
+  　└ <strong>裸子植物</strong>：胚珠がむき出し（マツ・スギ）
+</div>
+
+<p class="section-label">🔍 双子葉類 vs 単子葉類</p>
+<table class="data-table">
+  <tr><th>特徴</th><th>双子葉類</th><th>単子葉類</th></tr>
+  <tr><td>葉脈</td><td>網状脈</td><td>平行脈</td></tr>
+  <tr><td>根</td><td>主根と側根</td><td>ひげ根</td></tr>
+  <tr><td>維管束</td><td>輪状に並ぶ</td><td>散在する</td></tr>
+  <tr><td>子葉</td><td>2枚</td><td>1枚</td></tr>
+  <tr><td>例</td><td>アブラナ・バラ・大豆</td><td>イネ・トウモロコシ</td></tr>
+</table>
+
+<p class="section-label">🌾 胞子植物</p>
+<div class="tag-row">
+  <span class="tag tag-green">シダ植物</span>
+  <span class="tag tag-green">コケ植物</span>
+  <span class="tag tag-teal">藻類</span>
+</div>
+<div class="callout callout-green"><span class="callout-icon">💡</span><div>胞子植物は種子をつくらず、胞子で増える。維管束があるのはシダ植物のみ。</div></div>`
+      },
+      {
+        icon: '🦁',
+        title: '動物の分類',
+        content: `
+<p class="section-label">🐟 脊椎動物の比較</p>
+<table class="data-table">
+  <tr><th>種類</th><th>体温</th><th>呼吸</th><th>産み方</th><th>例</th></tr>
+  <tr><td><strong>魚類</strong></td><td>変温</td><td>えら</td><td>卵生（水中）</td><td>フナ・サメ</td></tr>
+  <tr><td><strong>両生類</strong></td><td>変温</td><td>幼→えら、成→肺・皮膚</td><td>卵生（水中）</td><td>カエル</td></tr>
+  <tr><td><strong>爬虫類</strong></td><td>変温</td><td>肺</td><td>卵生（陸上）</td><td>トカゲ・ヘビ</td></tr>
+  <tr><td><strong>鳥類</strong></td><td>恒温</td><td>肺</td><td>卵生（陸上）</td><td>ツバメ・ペンギン</td></tr>
+  <tr><td><strong>哺乳類</strong></td><td>恒温</td><td>肺</td><td>胎生</td><td>クジラ・コウモリ</td></tr>
+</table>
+
+<p class="section-label">🦀 無脊椎動物</p>
+<ul class="content-list">
+  <li><strong class="kw kw-green">節足動物</strong>：外骨格・節のある足　昆虫類（6本足）・甲殻類（エビ・カニ）</li>
+  <li><strong class="kw kw-green">軟体動物</strong>：外骨格なし・内臓を外套膜が覆う（タコ・イカ・貝）</li>
+  <li><strong class="kw kw-green">棘皮動物</strong>：（ウニ・ヒトデ）</li>
+</ul>
+<div class="callout callout-green"><span class="callout-icon">⚠️</span><div>クジラは魚ではなく<strong>哺乳類</strong>！コウモリは鳥ではなく哺乳類！</div></div>`
+      },
+      {
+        icon: '🧪',
+        title: '物質の性質',
+        content: `
+<p class="section-label">🔬 純物質と混合物</p>
+<div class="grid2">
+  <div class="box box-green center"><strong class="kw kw-green">純物質</strong><br>1種類の物質だけ<br>例）水・鉄・酸素</div>
+  <div class="box box-teal center"><strong style="color:#234e52">混合物</strong><br>2種類以上が混合<br>例）空気・食塩水</div>
+</div>
+
+<p class="section-label">⚖️ 密度</p>
+<div class="formula">密度 = 質量 ÷ 体積　[g/cm³]</div>
+<div class="box box-green">
+  密度が大きい物質ほど重い（沈む）<br>
+  水の密度：1.0 g/cm³
+</div>
+
+<p class="section-label">🌡️ 状態変化</p>
+<div class="formula">固体 ⇌ 液体 ⇌ 気体</div>
+<div class="box box-green">
+  <strong class="kw kw-green">融点</strong>：固体→液体に変わる温度（水：0℃）<br>
+  <strong class="kw kw-green">沸点</strong>：液体→気体に変わる温度（水：100℃）<br>
+  純物質の融点・沸点は<strong>一定</strong>（混合物は一定でない）
+</div>
+<div class="callout callout-green"><span class="callout-icon">💡</span><div>状態変化では物質の<strong>種類は変わらない</strong>（質量も変わらない）。体積は変化する。</div></div>`
+      },
+      {
+        icon: '💨',
+        title: '気体の性質',
+        content: `
+<p class="section-label">🔬 主な気体の性質まとめ</p>
+<table class="data-table">
+  <tr><th>気体</th><th>色・臭い</th><th>空気との比較</th><th>水への溶けやすさ</th><th>特徴</th></tr>
+  <tr><td><strong class="kw kw-green">酸素 O₂</strong></td><td>無色・無臭</td><td>やや重い</td><td>溶けにくい</td><td>ものを燃やす（助燃性）</td></tr>
+  <tr><td><strong class="kw kw-green">CO₂</strong></td><td>無色・無臭</td><td>重い</td><td>少し溶ける</td><td>石灰水を白濁させる</td></tr>
+  <tr><td><strong class="kw kw-green">水素 H₂</strong></td><td>無色・無臭</td><td>最も軽い</td><td>溶けにくい</td><td>可燃性（爆発）</td></tr>
+  <tr><td><strong class="kw kw-green">NH₃</strong></td><td>無色・刺激臭</td><td>軽い</td><td>非常に溶けやすい</td><td>水溶液はアルカリ性</td></tr>
+</table>
+
+<p class="section-label">🧪 気体の集め方</p>
+<table class="data-table">
+  <tr><th>方法</th><th>使う気体</th></tr>
+  <tr><td><strong>水上置換</strong></td><td>水に溶けにくい気体（O₂・H₂）</td></tr>
+  <tr><td><strong>上方置換</strong></td><td>空気より軽くて水に溶ける（NH₃）</td></tr>
+  <tr><td><strong>下方置換</strong></td><td>空気より重くて水に溶ける（CO₂）</td></tr>
+</table>`
+      },
+      {
+        icon: '💡',
+        title: '光の性質',
+        content: `
+<p class="section-label">🔄 光の反射</p>
+<div class="formula">入射角 = 反射角</div>
+<div class="box box-green">
+  法線（鏡面に垂直な線）から測った角度が等しい。
+</div>
+
+<p class="section-label">🌊 光の屈折</p>
+<div class="box box-green">
+  光が異なる物質の境界面で折れ曲がる現象。<br>
+  <strong class="kw kw-green">水→空気</strong>：屈折角 &gt; 入射角<br>
+  <strong class="kw kw-green">空気→水</strong>：屈折角 &lt; 入射角
+</div>
+<div class="callout callout-green"><span class="callout-icon">💡</span><div><strong>全反射</strong>：屈折角が90°以上になるとき、光が全て反射される現象（光ファイバーの原理）</div></div>
+
+<p class="section-label">🔍 凸レンズ</p>
+<table class="data-table">
+  <tr><th>物体の位置</th><th>像の種類</th><th>像の大きさ</th></tr>
+  <tr><td>焦点距離の2倍より遠い</td><td>実像（倒立）</td><td>小さい</td></tr>
+  <tr><td>焦点距離の2倍の位置</td><td>実像（倒立）</td><td>同じ大きさ</td></tr>
+  <tr><td>焦点と2倍の間</td><td>実像（倒立）</td><td>大きい</td></tr>
+  <tr><td>焦点の内側</td><td>虚像（正立）</td><td>大きい（虫眼鏡）</td></tr>
+</table>`
+      },
+      {
+        icon: '🔊',
+        title: '音の性質',
+        content: `
+<p class="section-label">🎵 音の三要素</p>
+<div class="grid2">
+  <div class="box box-green center"><strong class="kw kw-green">大きさ</strong><br>振幅が大きい<br>→大きな音</div>
+  <div class="box box-green center"><strong class="kw kw-green">高さ</strong><br>振動数が多い<br>→高い音</div>
+</div>
+<div class="box box-teal center"><strong style="color:#234e52">音色</strong>：同じ高さ・大きさでも違う音に聞こえる（楽器の違いなど）</div>
+
+<p class="section-label">📊 振動数</p>
+<div class="formula">振動数の単位：Hz（ヘルツ）</div>
+<div class="box box-green">
+  振動数が大きい → 音が<strong class="kw kw-green">高い</strong><br>
+  振動数が小さい → 音が<strong class="kw kw-green">低い</strong><br>
+  人間の可聴域：約20〜20000 Hz
+</div>
+
+<p class="section-label">🚀 音の速さ</p>
+<div class="formula">音の速さ ≈ 340 m/s（空気中・常温）</div>
+<div class="box box-green">
+  光の速さ（3×10⁸ m/s）より圧倒的に遅い。<br>
+  → 雷：光が見えてから音が遅れて聞こえる
+</div>
+<div class="callout callout-green"><span class="callout-icon">💡</span><div>音は固体・液体・気体を伝わる。真空中では伝わらない！</div></div>`
+      },
+      {
+        icon: '💪',
+        title: '力のはたらき',
+        content: `
+<p class="section-label">🎯 力の三要素</p>
+<div class="tag-row">
+  <span class="tag tag-green">大きさ</span>
+  <span class="tag tag-green">向き</span>
+  <span class="tag tag-green">作用点</span>
+</div>
+<div class="callout callout-green"><span class="callout-icon">💡</span><div>力は「矢印」で表す。矢印の長さ=大きさ、向き=力の向き、始点=作用点</div></div>
+
+<p class="section-label">🔋 力の種類</p>
+<table class="data-table">
+  <tr><th>力の種類</th><th>説明</th></tr>
+  <tr><td><strong>重力</strong></td><td>地球が物体を引く力（下向き）</td></tr>
+  <tr><td><strong>弾性力</strong></td><td>変形した物体が元に戻ろうとする力</td></tr>
+  <tr><td><strong>摩擦力</strong></td><td>物体の動きを妨げる力</td></tr>
+  <tr><td><strong>磁力</strong></td><td>磁石が引き合う・反発する力</td></tr>
+  <tr><td><strong>電気の力</strong></td><td>電荷間に働く力</td></tr>
+</table>
+
+<p class="section-label">🌀 フックの法則</p>
+<div class="formula">ばねの伸び ∝ 加えた力</div>
+<div class="box box-green">
+  ばねに力を加えると、力に比例して伸びる。<br>
+  グラフ：原点を通る直線になる。
+</div>
+
+<p class="section-label">⚡ 力の単位</p>
+<div class="formula">1 N（ニュートン）= 100 g の物体にはたらく重力</div>`
+      }
+    ]
+  },
+
+  shakai: {
+    name: '社会',
+    icon: '🌏',
+    theme: 'theme-shakai',
+    color: '#d69e2e',
+    topics: [
+      {
+        icon: '🗺️',
+        title: '地球のすがた',
+        content: `
+<p class="section-label">🌍 六大陸</p>
+<div class="tag-row">
+  <span class="tag tag-orange">ユーラシア大陸</span>
+  <span class="tag tag-orange">アフリカ大陸</span>
+  <span class="tag tag-orange">北アメリカ大陸</span>
+  <span class="tag tag-orange">南アメリカ大陸</span>
+  <span class="tag tag-orange">オーストラリア大陸</span>
+  <span class="tag tag-orange">南極大陸</span>
+</div>
+
+<p class="section-label">🌊 三大洋</p>
+<div class="grid2">
+  <div class="box box-orange center"><strong>太平洋</strong><br>最大の海洋</div>
+  <div class="box box-orange center"><strong>大西洋</strong><br>第2位</div>
+</div>
+<div class="box box-orange center"><strong>インド洋</strong>（第3位）</div>
+
+<p class="section-label">🧭 経線・緯線</p>
+<table class="data-table">
+  <tr><th>名称</th><th>方向</th><th>基準</th></tr>
+  <tr><td><strong class="kw kw-orange">経線</strong></td><td>縦（南北）</td><td>本初子午線（ロンドン）= 0°</td></tr>
+  <tr><td><strong class="kw kw-orange">緯線</strong></td><td>横（東西）</td><td>赤道 = 0°</td></tr>
+</table>
+
+<p class="section-label">⏰ 時差</p>
+<div class="formula">経度15°の差 = 1時間の時差</div>
+<div class="box box-orange">
+  日本（東経135°）とロンドン（0°）の時差：<br>
+  135 ÷ 15 = 9時間（日本が9時間進んでいる）
+</div>`
+      },
+      {
+        icon: '🌐',
+        title: '世界の地域',
+        content: `
+<p class="section-label">🌏 アジア州</p>
+<div class="box box-orange">
+  <strong class="kw kw-orange">モンスーン</strong>（季節風）の影響→雨季・乾季<br>
+  稲作が盛ん（東南・南・東アジア）<br>
+  世界の人口の約60%が集中
+</div>
+
+<p class="section-label">🇪🇺 ヨーロッパ州</p>
+<div class="box box-orange">
+  <strong class="kw kw-orange">EU</strong>（ヨーロッパ連合）で経済統合<br>
+  西岸海洋性気候（偏西風の影響で温暖）<br>
+  混合農業（穀物栽培＋牧畜）
+</div>
+
+<p class="section-label">🌍 アフリカ州</p>
+<div class="box box-orange">
+  <strong class="kw kw-orange">サヘル地帯</strong>：サハラ砂漠南部の半乾燥地帯（砂漠化進行）<br>
+  <strong>プランテーション農業</strong>：植民地時代の大農園<br>
+  一次産品（カカオ・コーヒー）に依存するモノカルチャー経済
+</div>
+
+<p class="section-label">🌎 南北アメリカ</p>
+<ul class="content-list">
+  <li><strong>パンパ</strong>：南米（アルゼンチン）の大草原・牧畜</li>
+  <li><strong>アンデス山脈</strong>：南米の山脈、インカ文明</li>
+  <li><strong>シリコンバレー</strong>：米国IT産業の集積地</li>
+  <li><strong>アマゾン川流域</strong>：世界最大の熱帯雨林</li>
+</ul>`
+      },
+      {
+        icon: '⛰️',
+        title: '日本の地形',
+        content: `
+<p class="section-label">🗾 日本の基本データ</p>
+<div class="box box-orange">
+  国土面積：約<strong class="kw kw-orange">37.8万 km²</strong>（世界61位）<br>
+  南北の長さ：約<strong class="kw kw-orange">3000 km</strong><br>
+  島の数：約6800島（本州・北海道・四国・九州・沖縄本島など）
+</div>
+
+<p class="section-label">🏔️ 日本アルプス（三大山脈）</p>
+<div class="tag-row">
+  <span class="tag tag-orange">飛騨山脈（北アルプス）</span>
+  <span class="tag tag-orange">木曽山脈（中央アルプス）</span>
+  <span class="tag tag-orange">赤石山脈（南アルプス）</span>
+</div>
+
+<p class="section-label">🏞️ 主な河川・平野</p>
+<table class="data-table">
+  <tr><th>区分</th><th>名称</th><th>特徴</th></tr>
+  <tr><td>最長河川</td><td><strong>信濃川</strong></td><td>長野〜新潟</td></tr>
+  <tr><td>流域最大</td><td><strong>利根川</strong></td><td>関東平野を流れる</td></tr>
+  <tr><td>最大平野</td><td><strong>関東平野</strong></td><td>日本最大の平野</td></tr>
+</table>
+
+<p class="section-label">🌊 海岸の種類</p>
+<div class="grid2">
+  <div class="box box-orange center"><strong>リアス海岸</strong><br>山地が沈降、複雑な入り江（三陸など）</div>
+  <div class="box box-orange center"><strong>砂浜海岸</strong><br>砂が堆積、なだらかな海岸</div>
+</div>`
+      },
+      {
+        icon: '🌦️',
+        title: '日本の気候',
+        content: `
+<p class="section-label">🗾 六つの気候区</p>
+<table class="data-table">
+  <tr><th>気候区</th><th>特徴</th></tr>
+  <tr><td><strong>北海道</strong></td><td>冷帯（亜寒帯）・梅雨なし・寒暖差大</td></tr>
+  <tr><td><strong>日本海側</strong></td><td>冬に大雪（北西の季節風＋水蒸気）</td></tr>
+  <tr><td><strong>太平洋側</strong></td><td>夏に雨多い、冬は晴れが多い</td></tr>
+  <tr><td><strong>中央高地</strong></td><td>内陸性（年較差大・少雨）</td></tr>
+  <tr><td><strong>瀬戸内</strong></td><td>温暖・少雨（山に挟まれる）</td></tr>
+  <tr><td><strong>南西諸島</strong></td><td>亜熱帯・年中温暖・台風多い</td></tr>
+</table>
+
+<p class="section-label">☔ 気候の特徴</p>
+<div class="box box-orange">
+  <strong class="kw kw-orange">季節風（モンスーン）</strong>：夏は南東から、冬は北西から吹く<br>
+  <strong class="kw kw-orange">梅雨</strong>：6〜7月、梅雨前線の影響<br>
+  <strong class="kw kw-orange">台風</strong>：7〜10月に多い（フィリピン沖で発生）<br>
+  <strong class="kw kw-orange">フェーン現象</strong>：山を越えた風が高温乾燥になる
+</div>
+<div class="formula">年降水量：全国平均 約1700 mm</div>`
+      },
+      {
+        icon: '🦣',
+        title: '原始〜弥生時代',
+        content: `
+<p class="section-label">🪨 旧石器時代</p>
+<div class="box box-orange">
+  <strong>打製石器</strong>使用（磨いていない石器）<br>
+  ナウマン象・マンモスなどを狩猟<br>
+  移動生活（洞窟・岩陰に居住）
+</div>
+
+<p class="section-label">🏺 縄文時代（約1万年前〜）</p>
+<div class="box box-orange">
+  <strong class="kw kw-orange">磨製石器</strong>・<strong class="kw kw-orange">縄文土器</strong>（厚くて黒褐色）<br>
+  <strong class="kw kw-orange">貝塚</strong>：当時の生活の証拠（食べた貝の跡）<br>
+  <strong class="kw kw-orange">竪穴住居</strong>：地面を掘り下げた住居
+</div>
+
+<p class="section-label">🌾 弥生時代（約2300年前〜）</p>
+<div class="box box-orange">
+  <strong class="kw kw-orange">稲作</strong>の開始（大陸から伝来）<br>
+  <strong class="kw kw-orange">金属器</strong>（青銅器・鉄器）の使用<br>
+  弥生土器（薄くて赤褐色）<br>
+  <strong class="kw kw-orange">邪馬台国</strong>・女王<strong class="kw kw-orange">卑弥呼</strong>（中国の書物「魏志倭人伝」に記録）
+</div>
+
+<p class="section-label">🏛️ 古墳時代</p>
+<div class="box box-orange">
+  <strong class="kw kw-orange">前方後円墳</strong>（鍵穴形の古墳）<br>
+  <strong class="kw kw-orange">埴輪</strong>（土の人形）・副葬品<br>
+  <strong class="kw kw-orange">大和政権</strong>が各地の豪族を統一
+</div>`
+      },
+      {
+        icon: '🏯',
+        title: '飛鳥〜奈良時代',
+        content: `
+<p class="section-label">🌸 飛鳥時代</p>
+<table class="data-table">
+  <tr><th>年</th><th>出来事</th></tr>
+  <tr><td>593年</td><td>聖徳太子が摂政に（推古天皇）</td></tr>
+  <tr><td>603年</td><td><strong>冠位十二階</strong>制定（能力で役人登用）</td></tr>
+  <tr><td>604年</td><td><strong>十七条憲法</strong>（仏教・天皇尊重）</td></tr>
+  <tr><td>607年</td><td><strong>遣隋使</strong>派遣（小野妹子）</td></tr>
+  <tr><td>645年</td><td><strong>大化の改新</strong>（中大兄皇子・中臣鎌足）</td></tr>
+  <tr><td>701年</td><td><strong>大宝律令</strong>（律令国家の完成）</td></tr>
+</table>
+
+<p class="section-label">🏛️ 奈良時代</p>
+<div class="box box-orange">
+  710年：<strong class="kw kw-orange">平城京</strong>遷都（奈良）<br>
+  聖武天皇：<strong class="kw kw-orange">東大寺・大仏</strong>建立（国家の安泰を祈願）<br>
+  仏教による国家統治（鎮護国家）
+</div>
+
+<p class="section-label">📚 奈良時代の文化・文学</p>
+<div class="tag-row">
+  <span class="tag tag-orange">万葉集（最古の和歌集）</span>
+  <span class="tag tag-orange">古事記（712年）</span>
+  <span class="tag tag-orange">日本書紀（720年）</span>
+</div>`
+      },
+      {
+        icon: '📜',
+        title: '平安時代',
+        content: `
+<p class="section-label">🏛️ 平安京遷都</p>
+<div class="formula">794年 桓武天皇が平安京へ遷都（現在の京都）</div>
+
+<p class="section-label">👑 藤原氏の摂関政治</p>
+<div class="box box-orange">
+  <strong class="kw kw-orange">摂政</strong>：天皇が幼少の時に代わって政治<br>
+  <strong class="kw kw-orange">関白</strong>：天皇が成人した後に助ける<br>
+  <strong class="kw kw-orange">藤原道長</strong>：「この世をば わが世とぞ思ふ 望月の…」<br>
+  <strong class="kw kw-orange">藤原頼通</strong>：平等院鳳凰堂建立（10円硬貨の図柄）
+</div>
+
+<p class="section-label">🌸 国風文化（平安文化）</p>
+<div class="box box-orange">
+  <strong class="kw kw-orange">かな文字</strong>の発達（漢字を崩した日本独自の文字）<br>
+  <strong class="kw kw-orange">源氏物語</strong>：紫式部（世界最古の長編小説）<br>
+  <strong class="kw kw-orange">枕草子</strong>：清少納言（随筆）<br>
+  <strong class="kw kw-orange">古今和歌集</strong>：最初の勅撰和歌集
+</div>
+
+<p class="section-label">⚔️ 武士の台頭</p>
+<div class="box box-orange">
+  地方の豪族が武装→<strong>武士（武士団）</strong>の形成<br>
+  <strong>平氏</strong>（桓武天皇の子孫・西日本）vs <strong>源氏</strong>（清和天皇の子孫・東日本）
+</div>`
+      },
+      {
+        icon: '⚔️',
+        title: '鎌倉時代',
+        content: `
+<p class="section-label">🏛️ 鎌倉幕府の成立</p>
+<table class="data-table">
+  <tr><th>年</th><th>出来事</th></tr>
+  <tr><td>1185年</td><td>源頼朝が<strong>守護・地頭</strong>を設置</td></tr>
+  <tr><td>1192年</td><td>源頼朝が<strong>征夷大将軍</strong>→鎌倉幕府正式成立</td></tr>
+</table>
+<div class="box box-orange">
+  <strong class="kw kw-orange">守護</strong>：各国の軍事・警察の支配<br>
+  <strong class="kw kw-orange">地頭</strong>：荘園・公領の管理、年貢の徴収
+</div>
+
+<p class="section-label">👑 執権政治</p>
+<div class="box box-orange">
+  将軍が幼少→<strong class="kw kw-orange">北条氏</strong>が実権を握る<br>
+  <strong>執権</strong>：将軍を補佐する最高職<br>
+  北条時政→北条義時→承久の乱（1221年）で幕府が朝廷を下す
+</div>
+
+<p class="section-label">🌊 元寇（蒙古襲来）</p>
+<div class="grid2">
+  <div class="box box-orange center"><strong>1274年</strong><br>文永の役<br>元・高麗軍来襲</div>
+  <div class="box box-orange center"><strong>1281年</strong><br>弘安の役<br>暴風雨で撃退</div>
+</div>
+
+<p class="section-label">🎨 鎌倉文化</p>
+<ul class="content-list">
+  <li>武士文化（写実的・力強い）</li>
+  <li><strong>金剛力士像</strong>（運慶・快慶）</li>
+  <li>新仏教の普及：浄土宗（法然）・浄土真宗（親鸞）・禅宗（栄西・道元）・日蓮宗（日蓮）</li>
+</ul>`
+      }
+    ]
+  },
+
+  eigo: {
+    name: '英語',
+    icon: '🔤',
+    theme: 'theme-eigo',
+    color: '#805ad5',
+    topics: [
+      {
+        icon: '🔵',
+        title: 'be動詞',
+        content: `
+<p class="section-label">📊 be動詞の使い分け</p>
+<table class="data-table">
+  <tr><th>主語</th><th>現在形</th><th>過去形</th></tr>
+  <tr><td>I</td><td><strong class="kw kw-purple">am</strong></td><td>was</td></tr>
+  <tr><td>he / she / it</td><td><strong class="kw kw-purple">is</strong></td><td>was</td></tr>
+  <tr><td>you / we / they</td><td><strong class="kw kw-purple">are</strong></td><td>were</td></tr>
+</table>
+
+<p class="section-label">❌ 否定文</p>
+<div class="box box-purple">
+  I am not a student. / I'm not a student.<br>
+  He is not (isn't) tall.<br>
+  They are not (aren't) here.
+</div>
+
+<p class="section-label">❓ 疑問文</p>
+<div class="formula">be動詞を主語の前に出す</div>
+<div class="box box-purple">
+  <strong>Are</strong> you a student? → Yes, I am. / No, I'm not.<br>
+  <strong>Is</strong> she happy? → Yes, she is. / No, she isn't.
+</div>
+<div class="callout callout-purple"><span class="callout-icon">⚠️</span><div>短縮形：I'm / He's / She's / It's / You're / We're / They're</div></div>`
+      },
+      {
+        icon: '🟢',
+        title: '一般動詞',
+        content: `
+<p class="section-label">📐 三単現のs（3人称・単数・現在）</p>
+<div class="box box-purple">
+  he / she / it が主語のとき動詞に<strong class="kw kw-purple">s</strong>をつける<br>
+  He <strong>likes</strong> music. / She <strong>plays</strong> tennis. / It <strong>goes</strong> fast.
+</div>
+<table class="data-table">
+  <tr><th>語尾</th><th>変化</th><th>例</th></tr>
+  <tr><td>多くの動詞</td><td>+s</td><td>like→likes</td></tr>
+  <tr><td>-s/-sh/-ch/-x/-o</td><td>+es</td><td>go→goes, wash→washes</td></tr>
+  <tr><td>子音+y</td><td>y→ies</td><td>study→studies</td></tr>
+  <tr><td>have</td><td>不規則</td><td>have→<strong>has</strong></td></tr>
+</table>
+
+<p class="section-label">❌ 否定文</p>
+<div class="box box-purple">
+  I / you / we / they：<strong>don't</strong> + 動詞原形<br>
+  he / she / it：<strong>doesn't</strong> + 動詞原形
+</div>
+
+<p class="section-label">❓ 疑問文</p>
+<div class="formula">Do / Does + 主語 + 動詞の原形 ~?</div>
+<div class="box box-purple">
+  <strong>Do</strong> you like ~? → Yes, I do. / No, I don't.<br>
+  <strong>Does</strong> he play ~? → Yes, he does. / No, he doesn't.
+</div>`
+      },
+      {
+        icon: '👤',
+        title: '代名詞',
+        content: `
+<p class="section-label">📊 人称代名詞一覧</p>
+<table class="data-table">
+  <tr><th>主語</th><th>主格</th><th>所有格</th><th>目的格</th><th>所有代名詞</th></tr>
+  <tr><td>私</td><td>I</td><td>my</td><td>me</td><td>mine</td></tr>
+  <tr><td>あなた</td><td>you</td><td>your</td><td>you</td><td>yours</td></tr>
+  <tr><td>彼</td><td>he</td><td>his</td><td>him</td><td>his</td></tr>
+  <tr><td>彼女</td><td>she</td><td>her</td><td>her</td><td>hers</td></tr>
+  <tr><td>それ</td><td>it</td><td>its</td><td>it</td><td>—</td></tr>
+  <tr><td>私たち</td><td>we</td><td>our</td><td>us</td><td>ours</td></tr>
+  <tr><td>彼ら</td><td>they</td><td>their</td><td>them</td><td>theirs</td></tr>
+</table>
+
+<p class="section-label">🔑 使い方</p>
+<div class="box box-purple">
+  <strong>主格</strong>：主語の位置　I like cats.<br>
+  <strong>所有格</strong>：名詞の前　my cat / his book<br>
+  <strong>目的格</strong>：動詞・前置詞の後　I like him.<br>
+  <strong>所有代名詞</strong>：～のもの　This is mine.
+</div>`
+      },
+      {
+        icon: '📦',
+        title: '名詞の複数形',
+        content: `
+<p class="section-label">📐 規則変化</p>
+<table class="data-table">
+  <tr><th>語尾</th><th>変化</th><th>例</th></tr>
+  <tr><td>多くの名詞</td><td>+s</td><td>book → books</td></tr>
+  <tr><td>-s/-sh/-ch/-x</td><td>+es</td><td>box → boxes</td></tr>
+  <tr><td>子音+y</td><td>y→ies</td><td>city → cities</td></tr>
+  <tr><td>-f/-fe</td><td>f→ves</td><td>leaf → leaves</td></tr>
+</table>
+
+<p class="section-label">⚠️ 不規則変化</p>
+<table class="data-table">
+  <tr><th>単数</th><th>複数</th><th>単数</th><th>複数</th></tr>
+  <tr><td>man</td><td>men</td><td>woman</td><td>women</td></tr>
+  <tr><td>child</td><td>children</td><td>foot</td><td>feet</td></tr>
+  <tr><td>tooth</td><td>teeth</td><td>mouse</td><td>mice</td></tr>
+</table>
+
+<p class="section-label">🚫 数えられない名詞</p>
+<div class="tag-row">
+  <span class="tag tag-purple">water（水）</span>
+  <span class="tag tag-purple">milk（牛乳）</span>
+  <span class="tag tag-purple">music（音楽）</span>
+  <span class="tag tag-purple">news（ニュース）</span>
+  <span class="tag tag-purple">information（情報）</span>
+</div>
+<div class="callout callout-purple"><span class="callout-icon">💡</span><div>数えられない名詞は複数形にできない。量を表す時は a cup of water / two glasses of milk のように言う。</div></div>`
+      },
+      {
+        icon: '❓',
+        title: '疑問詞',
+        content: `
+<p class="section-label">📋 疑問詞一覧</p>
+<table class="data-table">
+  <tr><th>疑問詞</th><th>意味</th><th>例文</th></tr>
+  <tr><td><strong class="kw kw-purple">What</strong></td><td>何</td><td>What do you have?</td></tr>
+  <tr><td><strong class="kw kw-purple">Who</strong></td><td>誰</td><td>Who is she?</td></tr>
+  <tr><td><strong class="kw kw-purple">Where</strong></td><td>どこ</td><td>Where do you live?</td></tr>
+  <tr><td><strong class="kw kw-purple">When</strong></td><td>いつ</td><td>When is your birthday?</td></tr>
+  <tr><td><strong class="kw kw-purple">Why</strong></td><td>なぜ</td><td>Why do you study? → Because ~</td></tr>
+  <tr><td><strong class="kw kw-purple">How</strong></td><td>どのように</td><td>How are you?</td></tr>
+</table>
+
+<p class="section-label">🔗 疑問詞の組み合わせ</p>
+<div class="tag-row">
+  <span class="tag tag-purple">What time（何時）</span>
+  <span class="tag tag-purple">What day（何曜日）</span>
+  <span class="tag tag-purple">How many（いくつ）</span>
+  <span class="tag tag-purple">How much（いくら／どのくらい）</span>
+  <span class="tag tag-purple">How long（どのくらいの長さ）</span>
+  <span class="tag tag-purple">How old（何歳）</span>
+</div>
+<div class="callout callout-purple"><span class="callout-icon">⚠️</span><div>疑問詞は文頭に置き、その後に疑問文の語順が続く！<br>What do you eat? / Where does he live?</div></div>`
+      },
+      {
+        icon: '💪',
+        title: 'can の使い方',
+        content: `
+<p class="section-label">📐 can の基本</p>
+<div class="formula">can + 動詞の原形（能力・可能・許可）</div>
+<div class="box box-purple">
+  I <strong>can swim</strong>.（私は泳げる）<br>
+  She <strong>can speak</strong> English.（彼女は英語を話せる）<br>
+  can の後は<strong>必ず動詞の原形</strong>！（三単現のsもつけない）
+</div>
+
+<p class="section-label">❌ 否定文</p>
+<div class="formula">cannot / can't + 動詞の原形</div>
+<div class="box box-purple">
+  I cannot (can't) play the piano.
+</div>
+
+<p class="section-label">❓ 疑問文</p>
+<div class="formula">Can + 主語 + 動詞の原形 ~?</div>
+<div class="box box-purple">
+  <strong>Can</strong> you swim? → Yes, I can. / No, I can't.<br>
+  <strong>Can</strong> she cook? → Yes, she can. / No, she can't.
+</div>
+
+<p class="section-label">⏪ could（過去形・丁寧な依頼）</p>
+<div class="box box-purple">
+  I could run fast when I was young.（過去の能力）<br>
+  Could you help me?（丁寧な依頼）
+</div>`
+      },
+      {
+        icon: '🏃',
+        title: '現在進行形',
+        content: `
+<p class="section-label">📐 現在進行形の形</p>
+<div class="formula">be動詞（am/is/are）+ 動詞のing形</div>
+<div class="box box-purple">
+  I <strong>am playing</strong> soccer.（今サッカーをしている）<br>
+  She <strong>is reading</strong> a book.
+</div>
+
+<p class="section-label">✍️ ing形の作り方</p>
+<table class="data-table">
+  <tr><th>パターン</th><th>変化</th><th>例</th></tr>
+  <tr><td>普通の動詞</td><td>+ing</td><td>play → playing</td></tr>
+  <tr><td>語尾がe</td><td>eを取って+ing</td><td>make → making</td></tr>
+  <tr><td>短母音+子音字</td><td>子音字を重ねて+ing</td><td>run → running</td></tr>
+  <tr><td>ieで終わる</td><td>ie→y+ing</td><td>die → dying</td></tr>
+</table>
+
+<p class="section-label">❌ 否定文 ❓ 疑問文</p>
+<div class="box box-purple">
+  否定：I am <strong>not</strong> playing.<br>
+  疑問：<strong>Are</strong> you playing? → Yes, I am. / No, I'm not.
+</div>
+<div class="callout callout-purple"><span class="callout-icon">💡</span><div>「今まさに〜しているところだ」という意味。be動詞を忘れずに！</div></div>`
+      },
+      {
+        icon: '🔤',
+        title: 'アルファベット・発音ルール',
+        content: `
+<p class="section-label">🔤 母音・子音</p>
+<div class="box box-purple">
+  <strong class="kw kw-purple">母音</strong>：a / e / i / o / u（5文字）<br>
+  <strong class="kw kw-purple">子音</strong>：残りの21文字
+</div>
+<div class="callout callout-purple"><span class="callout-icon">💡</span><div>冠詞 a/an の選択：母音で始まる語の前は an（an apple, an egg）</div></div>
+
+<p class="section-label">🗣️ 重要な発音パターン</p>
+<table class="data-table">
+  <tr><th>綴り</th><th>発音</th><th>例</th></tr>
+  <tr><td>th</td><td>舌を噛む音</td><td>this / think</td></tr>
+  <tr><td>sh</td><td>シャ行</td><td>she / shop</td></tr>
+  <tr><td>ch</td><td>チャ行</td><td>child / chair</td></tr>
+  <tr><td>wh</td><td>ウ音（hは黙字）</td><td>what / where</td></tr>
+</table>
+
+<p class="section-label">💬 よく使う表現</p>
+<div class="tag-row">
+  <span class="tag tag-purple">Nice to meet you.</span>
+  <span class="tag tag-purple">Thank you.</span>
+  <span class="tag tag-purple">Excuse me.</span>
+  <span class="tag tag-purple">I'm sorry.</span>
+  <span class="tag tag-purple">You're welcome.</span>
+  <span class="tag tag-purple">How are you? — I'm fine.</span>
+</div>
+
+<p class="section-label">🔢 序数（順序）</p>
+<table class="data-table">
+  <tr><th>基数</th><th>序数</th><th>基数</th><th>序数</th></tr>
+  <tr><td>one</td><td>first (1st)</td><td>two</td><td>second (2nd)</td></tr>
+  <tr><td>three</td><td>third (3rd)</td><td>four</td><td>fourth (4th)</td></tr>
+  <tr><td>five</td><td>fifth (5th)</td><td>twelve</td><td>twelfth (12th)</td></tr>
+</table>`
+      }
+    ]
+  }
+};
+
+// ===================================================
+// SCREEN MANAGEMENT
+// ===================================================
+function showHome() {
+  document.getElementById('home').classList.add('active');
+  document.getElementById('subject').classList.remove('active');
+  window.scrollTo(0, 0);
+}
+
+function showSubject(subjectKey) {
+  const sub = subjects[subjectKey];
+  if (!sub) return;
+
+  // Set header
+  document.getElementById('subjectIcon').textContent = sub.icon;
+  document.getElementById('subjectTitle').textContent = sub.name;
+  document.getElementById('subjectCount').textContent = `全${sub.topics.length}トピック`;
+
+  // Apply theme
+  const subjectScreen = document.getElementById('subject');
+  subjectScreen.className = 'screen active ' + sub.theme;
+
+  // Render topics
+  const topicList = document.getElementById('topicList');
+  topicList.innerHTML = '';
+  sub.topics.forEach((topic, idx) => {
+    const card = document.createElement('div');
+    card.className = 'topic-card';
+    card.innerHTML = `
+      <div class="topic-header" onclick="toggleCard(this)">
+        <span class="topic-num">${idx + 1}</span>
+        <span class="topic-icon">${topic.icon}</span>
+        <span class="topic-title">${topic.title}</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="topic-body">
+        <div class="topic-content">${topic.content}</div>
+      </div>
+    `;
+    topicList.appendChild(card);
+  });
+
+  // Switch screens
+  document.getElementById('home').classList.remove('active');
+  document.getElementById('subject').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function toggleCard(header) {
+  const card = header.closest('.topic-card');
+  card.classList.toggle('open');
+}
+
+// ===================================================
+// PWA SERVICE WORKER
+// ===================================================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+  </script>
+</body>
+</html>
